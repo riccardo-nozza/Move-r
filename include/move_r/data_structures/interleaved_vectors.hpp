@@ -212,7 +212,7 @@ class interleaved_vectors {
             std::vector<char> new_data_vectors;
             no_init_resize(new_data_vectors,capacity*width_entry+16);
 
-            #pragma omp parallel for num_threads(num_threads)
+            //#pragma omp parallel for num_threads(num_threads)
             for (uint64_t i=0; i<size_vectors*width_entry; i++) {
                 new_data_vectors[i] = data_vectors[i];
             }

@@ -3,8 +3,12 @@ set (CMAKE_CXX_STANDARD 20)
 
 find_package(Git REQUIRED)
 
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/external/libsais/LICENSE")
-  execute_process(COMMAND git submodule update --init --recursive WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+set(DIR ${CMAKE_SOURCE_DIR}/submodules/Move-r)
+set(BDIR ${CMAKE_BINARY_DIR}/submodules/Move-r)
+
+
+if(NOT EXISTS "${DIR}/external/libsais/LICENSE")
+  execute_process(COMMAND git submodule update --init --recursive WORKING_DIRECTORY "${DIR}")
 endif()
 
 project (move-r LANGUAGES C CXX)
@@ -33,57 +37,57 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "${move_r_debug_flags} -Ofast")
 find_package(OpenMP REQUIRED)
 
 # ips4o
-add_subdirectory("${CMAKE_SOURCE_DIR}/external/ips4o")
+add_subdirectory("${DIR}/external/ips4o")
 set_target_properties(ips4o_example PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 
 # concurrentqueue
-add_subdirectory("${CMAKE_SOURCE_DIR}/external/concurrentqueue/")
+add_subdirectory("${DIR}/external/concurrentqueue/")
 
 # libsais
 set(LIBSAIS_USE_OPENMP ON CACHE BOOL "" FORCE)
-add_subdirectory("${CMAKE_SOURCE_DIR}/external/libsais/")
+add_subdirectory("${DIR}/external/libsais/")
 
 # malloc_count
 add_library(malloc_count INTERFACE)
-target_sources(malloc_count INTERFACE "${CMAKE_SOURCE_DIR}/external/malloc_count/malloc_count.c")
-target_include_directories(malloc_count INTERFACE "${CMAKE_SOURCE_DIR}/external/malloc_count/")
+target_sources(malloc_count INTERFACE "${DIR}/external/malloc_count/malloc_count.c")
+target_include_directories(malloc_count INTERFACE "${DIR}/external/malloc_count/")
 target_link_libraries(malloc_count INTERFACE dl)
 
 # sdsl
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
-add_subdirectory("${CMAKE_SOURCE_DIR}/external/sdsl-lite/")
+add_subdirectory("${DIR}/external/sdsl-lite/")
 set_target_properties(
   uninstall-sdsl uninstall divsufsort divsufsort64
   PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1
 )
-target_include_directories(sdsl PUBLIC "${CMAKE_BINARY_DIR}/external/sdsl-lite/external/libdivsufsort/include/")
+target_include_directories(sdsl PUBLIC "${BDIR}/external/sdsl-lite/external/libdivsufsort/include/")
 
 # gtl
-add_subdirectory("${CMAKE_SOURCE_DIR}/external/gtl/")
+add_subdirectory("${DIR}/external/gtl/")
 
 # sparse-map
-add_subdirectory("${CMAKE_SOURCE_DIR}/external/sparse-map/")
+add_subdirectory("${DIR}/external/sparse-map/")
 
 # emhash
 add_library(emhash INTERFACE)
-target_include_directories(emhash INTERFACE "${CMAKE_SOURCE_DIR}/external/emhash/")
+target_include_directories(emhash INTERFACE "${DIR}/external/emhash/")
 
 # Big-BWT
-execute_process(COMMAND make WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/external/Big-BWT/")
+execute_process(COMMAND make WORKING_DIRECTORY "${DIR}/external/Big-BWT/")
 
 # sais-lite-lcp
 add_library(sais-lite-lcp INTERFACE)
-target_include_directories(sais-lite-lcp INTERFACE "${CMAKE_SOURCE_DIR}/external/sais-lite-lcp/")
+target_include_directories(sais-lite-lcp INTERFACE "${DIR}/external/sais-lite-lcp/")
 
 # sux
 add_library(sux INTERFACE)
-target_include_directories(sux INTERFACE "${CMAKE_SOURCE_DIR}/external/sux/")
+target_include_directories(sux INTERFACE "${DIR}/external/sux/")
 
 ############################# move-r #############################
 
 # move-r
 add_library(move_r INTERFACE)
-target_include_directories(move_r INTERFACE "${CMAKE_SOURCE_DIR}/include/")
+target_include_directories(move_r INTERFACE "${DIR}/include/")
 target_link_libraries(move_r INTERFACE
   OpenMP::OpenMP_CXX sdsl libsais ips4o gtl sparse_map
   malloc_count concurrentqueue sais-lite-lcp emhash sux
@@ -114,7 +118,7 @@ if(MOVE_R_BUILD_CLI)
     move-r-build move-r-revert move-r-count
     move-r-locate move-r-patterns
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cli/"
+    RUNTIME_OUTPUT_DIRECTORY "${BDIR}/cli/"
   )
 endif()
 
@@ -135,7 +139,7 @@ if(MOVE_R_BUILD_EXAMPLES)
     example-move_data_structure example-move_r-queries
     example-move_r-retrieval example-move_r-store-load
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/examples/"
+    RUNTIME_OUTPUT_DIRECTORY "${BDIR}/examples/"
   )
 endif()
 
@@ -144,41 +148,41 @@ endif()
 if(MOVE_R_BUILD_BENCH_CLI)
   # rcomp
   add_library(rcomp INTERFACE)
-  target_include_directories(rcomp INTERFACE "${CMAKE_SOURCE_DIR}/external/rcomp/include/")
+  target_include_directories(rcomp INTERFACE "${DIR}/external/rcomp/include/")
 
   # r-index-f
   add_library(r-index-f INTERFACE)
   target_include_directories(r-index-f INTERFACE
-    "${CMAKE_SOURCE_DIR}/external/r-index-f/include/common/"
-    "${CMAKE_SOURCE_DIR}/external/r-index-f/include/r_index_f/"
+    "${DIR}/external/r-index-f/include/common/"
+    "${DIR}/external/r-index-f/include/r_index_f/"
   )
   target_link_libraries(r-index-f INTERFACE sdsl)
-  add_executable(pfp-thresholds "${CMAKE_SOURCE_DIR}/external/pfp-thresholds/test/src/pfp_thresholds.cpp")
-  target_sources(pfp-thresholds PRIVATE "${CMAKE_SOURCE_DIR}/external/gsa-is/gsacak.c")
+  add_executable(pfp-thresholds "${DIR}/external/pfp-thresholds/test/src/pfp_thresholds.cpp")
+  target_sources(pfp-thresholds PRIVATE "${DIR}/external/gsa-is/gsacak.c")
   target_include_directories(pfp-thresholds PRIVATE
-    "${CMAKE_SOURCE_DIR}/external/pfp-thresholds/include/common/"
-    "${CMAKE_SOURCE_DIR}/external/pfp-thresholds/include/pfp/"
-    "${CMAKE_SOURCE_DIR}/external/gsa-is/"
+    "${DIR}/external/pfp-thresholds/include/common/"
+    "${DIR}/external/pfp-thresholds/include/pfp/"
+    "${DIR}/external/gsa-is/"
   )
   target_link_libraries(pfp-thresholds PRIVATE sdsl malloc_count)
-  set_target_properties(pfp-thresholds PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/external/pfp-thresholds/")
+  set_target_properties(pfp-thresholds PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BDIR}/external/pfp-thresholds/")
 
   # r-index
   add_library(r-index INTERFACE)
   target_include_directories(r-index INTERFACE
-    "${CMAKE_SOURCE_DIR}/external/r-index/internal/"
-    "${CMAKE_SOURCE_DIR}/external/r-index/"
+    "${DIR}/external/r-index/internal/"
+    "${DIR}/external/r-index/"
   )
   target_link_libraries(r-index INTERFACE sdsl divsufsort divsufsort64)
-  execute_process(COMMAND make WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/external/r-index/Big-BWT/")
+  execute_process(COMMAND make WORKING_DIRECTORY "${DIR}/external/r-index/Big-BWT/")
 
   # unordered_dense
-  add_subdirectory("${CMAKE_SOURCE_DIR}/external/r-index-rlzsa/external/unordered_dense")
+  add_subdirectory("${DIR}/external/r-index-rlzsa/external/unordered_dense")
 
   # r-index-rlzsa
   add_library(r-index-rlzsa INTERFACE)
   target_include_directories(r-index-rlzsa INTERFACE
-    "${CMAKE_SOURCE_DIR}/external/r-index-rlzsa/internal/"
+    "${DIR}/external/r-index-rlzsa/internal/"
   )
   target_link_libraries(r-index-rlzsa INTERFACE
     sdsl unordered_dense malloc_count sais-lite-lcp ips4o
@@ -187,13 +191,13 @@ if(MOVE_R_BUILD_BENCH_CLI)
   # OnlineRlbwt
   add_library(OnlineRlbwt INTERFACE)
   target_include_directories(OnlineRlbwt INTERFACE
-    "${CMAKE_SOURCE_DIR}/external/OnlineRlbwt/"
-    "${CMAKE_SOURCE_DIR}/external/OnlineRlbwt/module/Basics/"
-    "${CMAKE_SOURCE_DIR}/external/OnlineRlbwt/module/BTree/"
+    "${DIR}/external/OnlineRlbwt/"
+    "${DIR}/external/OnlineRlbwt/module/Basics/"
+    "${DIR}/external/OnlineRlbwt/module/BTree/"
   )
 
   # grlBWT
-  set(GRLBWT_ROOT "${CMAKE_SOURCE_DIR}/external/grlBWT/")
+  set(GRLBWT_ROOT "${DIR}/external/grlBWT/")
   add_subdirectory("${GRLBWT_ROOT}/external/cdt/")
   add_subdirectory("${GRLBWT_ROOT}/external/bioparsers/")
   add_library(grlbwt STATIC
@@ -217,27 +221,27 @@ if(MOVE_R_BUILD_BENCH_CLI)
   target_link_libraries(grlbwt2rle PRIVATE grlbwt)
   set_target_properties(grlbwt-cli grlbwt2rle
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-    "${CMAKE_BINARY_DIR}/external/grlBWT/"
+    "${BDIR}/external/grlBWT/"
   )
 
   # block_RLBWT
-  if(NOT EXISTS "${CMAKE_BINARY_DIR}/external/block_RLBWT/")
-    execute_process(COMMAND mkdir "${CMAKE_BINARY_DIR}/external/block_RLBWT/")
+  if(NOT EXISTS "${BDIR}/external/block_RLBWT/")
+    execute_process(COMMAND mkdir "${BDIR}/external/block_RLBWT/")
   endif()
   execute_process(
-    COMMAND make "${CMAKE_SOURCE_DIR}/external/block_RLBWT/make_alphabet_header"
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/external/block_RLBWT/"
+    COMMAND make "${DIR}/external/block_RLBWT/make_alphabet_header"
+    WORKING_DIRECTORY "${DIR}/external/block_RLBWT/"
   )
   execute_process(COMMAND mv
-    "${CMAKE_SOURCE_DIR}/external/block_RLBWT/make_alphabet_header"
-    "${CMAKE_BINARY_DIR}/external/block_RLBWT/make_alphabet_header"
+    "${DIR}/external/block_RLBWT/make_alphabet_header"
+    "${BDIR}/external/block_RLBWT/make_alphabet_header"
   )
 
   ############################# move-r #############################
 
   add_executable(move-r-bench cli/move-r-bench/move-r-bench.cpp)
   target_link_libraries(move-r-bench PRIVATE move_r rcomp r-index-f r-index OnlineRlbwt r-index-rlzsa)
-  set_target_properties(move-r-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cli/")
+  set_target_properties(move-r-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BDIR}/cli/")
 endif()
 
 ############################# move-r internal bench #############################
@@ -246,7 +250,7 @@ if(MOVE_R_BUILD_BENCH)
   add_executable(move-r-bench-int-rank-select bench/move_r_bench_int_rank_select.cpp)
   target_link_libraries(move-r-bench-int-rank-select PRIVATE move_r)
   set_target_properties(move-r-bench-int-rank-select PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bench/")
+    RUNTIME_OUTPUT_DIRECTORY "${BDIR}/bench/")
 endif()
 
 ############################# move-r tests #############################
@@ -256,9 +260,9 @@ if(MOVE_R_BUILD_TESTS)
   include(GoogleTest)
   include(Dart)
 
-  add_executable(test-move_r "${CMAKE_SOURCE_DIR}/tests/test_move_r.cpp")
-  add_executable(test-move_r_int "${CMAKE_SOURCE_DIR}/tests/test_move_r_int.cpp")
-  add_executable(test-move_data_structure "${CMAKE_SOURCE_DIR}/tests/test_move_data_structure.cpp")
+  add_executable(test-move_r "${DIR}/tests/test_move_r.cpp")
+  add_executable(test-move_r_int "${DIR}/tests/test_move_r_int.cpp")
+  add_executable(test-move_data_structure "${DIR}/tests/test_move_data_structure.cpp")
 
   target_link_libraries(test-move_r PRIVATE gtest_main move_r)
   target_link_libraries(test-move_r_int PRIVATE gtest_main move_r)
@@ -267,7 +271,7 @@ if(MOVE_R_BUILD_TESTS)
   set_target_properties(
     test-move_r test-move_r_int test-move_data_structure
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-    "${CMAKE_BINARY_DIR}/tests/"
+    "${BDIR}/tests/"
   )
 
   gtest_discover_tests(test-move_r)
