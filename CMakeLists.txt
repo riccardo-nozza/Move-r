@@ -3,8 +3,8 @@ set (CMAKE_CXX_STANDARD 20)
 
 find_package(Git REQUIRED)
 
-set(DIR ${CMAKE_SOURCE_DIR}/submodules/Move-r)
-set(BDIR ${CMAKE_BINARY_DIR}/submodules/Move-r)
+set(DIR ${CMAKE_SOURCE_DIR}/Move-r)
+set(BDIR ${CMAKE_BINARY_DIR}/Move-r)
 
 
 if(NOT EXISTS "${DIR}/external/libsais/LICENSE")
